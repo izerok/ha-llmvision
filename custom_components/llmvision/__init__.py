@@ -57,7 +57,8 @@ from .const import (
     EXPOSE_IMAGES,
     GENERATE_TITLE,
     SENSOR_ENTITY,
-    DATA_EXTRACTION_PROMPT,
+    get_data_extraction_prompt,
+    get_hass_language,
     DEFAULT_OPENAI_MODEL,
     DEFAULT_ANTHROPIC_MODEL,
     DEFAULT_AZURE_MODEL,
@@ -856,7 +857,10 @@ def setup(hass, config):
             expose_images=call.expose_images,
         )
 
-        call.memory = Memory(hass, system_prompt=DATA_EXTRACTION_PROMPT)
+        call.memory = Memory(
+            hass,
+            system_prompt=get_data_extraction_prompt(get_hass_language(hass)),
+        )
         await call.memory._update_memory()
 
         response = await request.call(call)

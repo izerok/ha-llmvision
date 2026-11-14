@@ -1,0 +1,743 @@
+# Snooze blueprint or notifications
+blueprint:
+  name: AI 事件摘要（中文版 v1.6.0）
+  author: valentinfrlch
+  homeassistant:
+    min_version: 2024.10.0
+  description: '为摄像头事件生成 AI 摘要。先向手机推送一条带预览的通知，AI 摘要出来后再动态更新。
+    （中文版：提示词、标题和通知均为中文；模型输出跟随 Home Assistant 语言。）'
+  domain: automation
+  source_url: https://github.com/izerok/ha-llmvision/blob/main/blueprints/event_summary_zh.yaml
+  input:
+    run_conditions:
+      name: 运行条件
+      description: 只有全部条件都满足时，蓝图才会运行。
+      default: []
+      selector:
+        condition: {}
+    cooldown:
+      name: 冷却时间
+      description: 再次运行自动化前需要等待的时间。人流密集区域强烈建议设置。
+      default:
+        minutes: 10
+      selector:
+        duration: {}
+    camera_sensor_section:
+      name: 摄像头与传感器设置
+      description: 摄像头和传感器实体的设置。
+      icon: mdi:camera
+      input:
+        camera_entities:
+          name: 摄像头实体
+          description: 要监控的摄像头实体列表
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - camera
+              reorder: false
+        trigger_state:
+          name: 触发状态
+          description: 当某个摄像头变为该状态时，自动化开始运行。
+          default: recording
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        motion_sensors:
+          name: 移动传感器
+          description: 如果摄像头不会变状态（Frigate），请设置此项。顺序与摄像头实体保持一致。
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - binary_sensor
+              reorder: false
+        duration:
+          name: 时长
+          description: 用于分析的录制时长（秒）。
+          default: 5
+          selector:
+            number:
+              min: 1.0
+              max: 60.0
+              step: 1.0
+              mode: slider
+        max_frames:
+          name: 最大帧数
+          description: 要分析的帧数。会挑选动作最大的帧。
+          default: 3
+          selector:
+            number:
+              min: 1.0
+              max: 60.0
+              step: 1.0
+              mode: slider
+    ai_section:
+      name: AI 设置
+      description: 分析用的 AI 设置。
+      icon: mdi:brain
+      collapsed: true
+      input:
+        store_in_timeline:
+          name: 存入时间线
+          description: 把事件存入时间线，之后可以向它提问。如果启用了重要性分级，只有被评为普通或严重的事件才会被保存。
+          default: true
+          selector:
+            boolean: {}
+        use_memory:
+          name: 使用记忆
+          description: 使用记忆中保存的信息提供额外上下文。须先设置记忆。
+          default: false
+          selector:
+            boolean: {}
+        message:
+          name: 提示词
+          description: video_analyzer 动作使用的模型提示词
+          default: '根据短时间内连续拍摄的一系列图片总结事件。只关注移动的主体，如人、车辆和其他活动元素。忽略静态物体和景物。清晰简洁地描述动作和互动。不要提及或暗示图片的存在，就像直接观察事件一样呈现信息。如果没有检测到移动，请回答：“未发现活动。”'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        provider:
+          name: 提供者
+          description: 用于分析的提供者。更多信息请参阅文档。
+          selector:
+            config_entry:
+              integration: llmvision
+        model:
+          name: 模型
+          description: 使用哪个模型。取决于所选提供者。
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        target_width:
+          name: 目标宽度
+          description: 缩小图片（节省 Token 并加快处理速度）
+          default: 1280
+          selector:
+            number:
+              min: 512.0
+              max: 3840.0
+              step: 1.0
+              mode: slider
+        max_tokens:
+          name: 最大 Token 数
+          description: >
+            最多生成的 Token 数。用于控制摘要长度。
+          default: 4000
+          selector:
+            number:
+              min: 1
+              max: 10000
+              step: 1
+              mode: slider
+    notification_section:
+      name: 通知设置
+      description: 通知发送的相关设置。
+      icon: mdi:bell
+      collapsed: true
+      input:
+        notify:
+          name: 发送通知
+          description: 向手机发送通知。
+          default: true
+          selector:
+            boolean: {}
+        condition_notify:
+          name: 通知条件
+          description: 通知设备需要满足的条件。
+          default: []
+          selector:
+            condition: {}
+        notify_device:
+          name: 通知设备
+          description: 要发送通知的设备。可多选。仅适用于 Home Assistant 手机 App。
+          default: []
+          selector:
+            device:
+              multiple: true
+              filter:
+              - integration: mobile_app
+        notification_delivery:
+          name: 通知发送方式
+          description: "控制通知的发送方式。
+            
+            **动态**：分析前立即推送实时预览（仅 iOS）或快照，摘要出来后再静默更新通知。
+            **合并**：等事件摘要生成后再发送通知。如果同一事件收到多条通知，请用这个。"
+          default: Dynamic
+          selector:
+            select:
+              options:
+              - Dynamic
+              - Consolidated
+              multiple: false
+              sort: false
+              custom_value: false
+        preview_mode:
+          name: 预览模式
+          description: "在分析前选择实时预览或事件快照。
+            \n> [!IMPORTANT]  \n> **注意**：实时预览仅支持 iOS。"
+          default: Snapshot
+          selector:
+            select:
+              options:
+              - Snapshot
+              - Live Preview
+              multiple: false
+              sort: false
+              custom_value: false
+        analysis_mode:
+          name: 分析模式
+          description: "在分析后选择实时预览或事件快照。
+            \n> [!IMPORTANT]  \n> **注意**：实时预览仅支持 iOS。"
+          default: Snapshot
+          selector:
+            select:
+              options:
+              - Snapshot
+              - Live Preview
+              multiple: false
+              sort: false
+              custom_value: false
+        notification_time:
+          name: 通知时间
+          description: 在通知标题中加入时间，并选择 12 小时制或 24 小时制。
+          default: ''
+          selector:
+            select:
+              options:
+              - label: 不添加时间
+                value: ''
+              - label: 12 小时制
+                value: at {{ now().strftime("%-I:%M %p") }}
+              - label: 24 小时制
+                value: at {{ now().strftime("%H:%M") }}
+              multiple: false
+              sort: false
+              custom_value: false
+        file_path:
+          name: 文件路径 - 动态模式 + 快照预览时发送快照
+          description: "存放最新快照的文件路径（多摄像头时取第一个摄像头）。也可以自定义位置。
+            
+            默认使用 `媒体文件夹 - 安全`，对应 **/media/snapshots/<CAMERA_NAME>/last_motion.jpg**
+            
+            如果遇到问题，可试试 `公共文件夹 - 不安全`，对应 **/config/www/snapshots/{{ camera_file_path }}/last_motion.jpg**。***注意：该选项不安全，会把图片暴露到网上。***"
+          default: /media/llmvision/snapshots_blueprint/{{ camera_file_path }}/last_motion.jpg
+          selector:
+            select:
+              options:
+              - label: 媒体文件夹 - 安全
+                value: /media/llmvision/snapshots_blueprint/{{ camera_file_path }}/last_motion.jpg
+              - label: 公共文件夹 - 不安全
+                value: /config/www/snapshots/{{ camera_file_path }}/last_motion.jpg
+              custom_value: true
+              multiple: false
+              sort: false
+        tap_navigate:
+          name: 点击跳转
+          description: 点击通知后要打开的 Home Assistant 仪表盘（例如 /lovelace/cameras）。
+          default: /lovelace/0
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        delay_notification:
+          name: 通知冷却时间
+          description: 发送下一条通知前需要等待的时间（秒）。
+          default: 60
+          selector:
+            number:
+              min: 0.0
+              max: 86400.0
+              unit_of_measurement: seconds
+              mode: box
+              step: 1.0
+        notification_sticky:
+          name: 常驻通知 - 仅 Android
+          description: '启用后，点击通知后它仍会保留在设备上，除非手动划掉。
+
+            '
+          default: true
+          selector:
+            boolean: {}
+        notification_color:
+          name: 通知颜色 - 仅 Android
+          description: '设置 Android 设备上通知的颜色，HEX 格式。（默认 = 钢蓝色 - #03a9f4）'
+          default: '#03a9f4'
+          selector:
+            select:
+              options:
+              - label: '钢蓝色 - #03a9f4'
+                value: '#03a9f4'
+              - label: '红色 - #f44336'
+                value: '#f44336'
+              - label: '粉色 - #e91e63'
+                value: '#e91e63'
+              - label: '紫色 - #926bc7'
+                value: '#926bc7'
+              - label: '深紫色 - #6e41ab'
+                value: '#6e41ab'
+              - label: '靛蓝色 - #3f51b5'
+                value: '#3f51b5'
+              - label: '蓝色 - #2196f3'
+                value: '#2196f3'
+              - label: '浅蓝色 - #03a9f4'
+                value: '#03a9f4'
+              - label: '青色 - #00bcd4'
+                value: '#00bcd4'
+              - label: '青绿色 - #009688'
+                value: '#009688'
+              - label: '绿色 - #4caf50'
+                value: '#4caf50'
+              - label: '浅绿色 - #8bc34a'
+                value: '#8bc34a'
+              - label: '柠檬绿 - #cddc39'
+                value: '#cddc39'
+              - label: '黄色 - #ffeb3b'
+                value: '#ffeb3b'
+              - label: '琥珀色 - #ffc107'
+                value: '#ffc107'
+              - label: '橙色 - #ff9800'
+                value: '#ff9800'
+              - label: '深橙色 - #ff5722'
+                value: '#ff5722'
+              - label: '棕色 - #795548'
+                value: '#795548'
+              - label: '浅灰色 - #bdbdbd'
+                value: '#bdbdbd'
+              - label: '灰色 - #9e9e9e'
+                value: '#9e9e9e'
+              - label: '深灰色 - #606060'
+                value: '#606060'
+              - label: '蓝灰色 - #607d8b'
+                value: '#607d8b'
+              - label: '黑色 - #000000'
+                value: '#000000'
+              - label: 白色 - #ffffff
+                value: '#ffffff'
+              custom_value: true
+              sort: false
+              multiple: false
+        notification_icon:
+          name: 通知栏图标 - 仅 Android
+          description: 更改通知中显示的图标。
+          default: mdi:cctv
+          selector:
+            icon:
+              placeholder: mdi:cctv
+        notification_channel:
+          name: 自定义通知渠道或闹钟模式 - 仅 Android
+          description: 创建新的通知渠道，可自定义通知声音、振动模式，并绕过勿扰模式。摄像头名称取第一个摄像头实体。在 Android 设备上直接配置 -> Home Assistant App 设置 -> 通知。
+            使用 `Alarm` 可使用设备的大声闹钟通知音。也可以输入自己的渠道名。
+            [了解更多](https://companion.home-assistant.io/docs/notifications/notification-commands/#volume-level)
+            （默认 = 'LLM Vision 快照'）。
+          default: 'LLM Vision 快照'
+          selector:
+            select:
+              options:
+              - label: LLM Vision 快照
+                value: 'LLM Vision Snapshot'
+              - label: 摄像头名称
+                value: '{{ camera }} Snapshot'
+              - label: 闹钟
+                value: alarm_stream
+              custom_value: true
+              multiple: false
+              sort: false
+        tts_notification:
+          name: 在设备上用文字转语音（TTS）朗读通知。仅 Android
+          description: 启用 TTS 通知。
+          default: false
+          selector:
+            boolean: {}
+        tts_volume:
+          name: TTS 音量（仅 Android）
+          description: "将 TTS 音量设为设备的当前闹钟音量或最大音量。
+            \n> [!NOTE]  \n> 闹钟音量会忽略勿扰模式！"
+          default: notification_stream
+          selector:
+            select:
+              options:
+              - label: 通知音量
+                value: notification_stream
+              - label: 闹钟音量/声音
+                value: alarm_stream
+              - label: 最大闹钟音量/声音
+                value: alarm_stream_max
+              multiple: false
+              sort: false
+              custom_value: false
+        condition_notify_tts:
+          name: TTS 通知条件
+          description: 向设备发送 TTS 通知需要满足的条件。
+          default: []
+          selector:
+            condition: {}
+        notification_sound:
+          name: 通知声音 - 仅 iOS
+          description: '可以指定设备上一个通知时播放的声音文件。可以把声音文件导入 Home Assistant，
+            或输入[预装通知声音](https://companion.home-assistant.io/docs/notifications/notification-sounds/#pre-installed-notification-sounds)的文件名
+           （例如：US-EN-Alexa-Motion-Detected-Generic.wav）。'
+          default: default
+          selector:
+            select:
+              options:
+              - label: 默认
+                value: default
+              - label: 无
+                value: none
+              - label: Alexa 检测到移动
+                value: US-EN-Alexa-Motion-Detected-Generic.wav
+              - label: Morgan Freeman 检测到移动
+                value: US-EN-Morgan-Freeman-Motion-Detected.wav
+              custom_value: true
+              sort: false
+              multiple: false
+        notification_volume:
+          name: 声音音量 - 仅 iOS
+          description: 指定声音大小 %
+          default: 1
+          selector:
+            number:
+              max: 1.0
+              min: 0.0
+              unit_of_measurement: '%'
+              step: 1.0
+              mode: slider
+        notification_critical:
+          name: 严重通知 - 仅 iOS
+          description: 以严重通知发送到手机。将忽略静音/振动模式。
+          default: false
+          selector:
+            boolean: {}
+    experimental_section:
+      name: 实验性设置
+      description: 实验性功能。请谨慎使用。
+      icon: mdi:apple-keyboard-option
+      collapsed: true
+      input:
+        important:
+          name: 重要性分级（实验性）
+          description: >
+            '用 AI 把事件分为严重、普通或低。只为普通及以上事件发送通知。严重事件会绕过“勿扰”设置。请谨慎使用：AI 可能会判断错误。'
+          default: false
+          selector:
+            boolean:
+        importance_prompt:
+          name: 重要性提示词（实验性）
+          description: 自定义用于把事件分为严重、普通或低重要性的提示词。
+          default: "根据这张图片给安防事件分级。从以下选项中选择：不重要的事件用 'passive'，值得注意但不严重的事件（例如有人在门口）用 'time-sensitive'，只有疑似入室盗窃或高度可疑的活动才用 'critical'。只回答其中一个选项，不要加任何解释。"
+          selector:
+            text:
+              multiline: true
+        # Add Customized Actions
+        additional_actions:
+          name: 附加动作（实验性）
+          description: AI 分析和通知完成后要运行的附加动作。有些动作可能无效并导致自动化无法运行，
+            请谨慎使用。
+          default: []
+          selector:
+            action: {}
+variables:
+  important: !input important
+  store_in_timeline: !input store_in_timeline
+  cooldown: !input cooldown
+  preview_mode: !input preview_mode
+  analysis_mode: !input analysis_mode
+  notify_devices: !input notify_device
+  notification_delivery: !input notification_delivery
+  notification_sticky: !input notification_sticky
+  notification_color: !input notification_color
+  notification_icon: !input notification_icon
+  notification_channel: !input notification_channel
+  notification_sound: !input notification_sound
+  notification_volume: !input notification_volume
+  notification_critical: !input notification_critical
+  tts_volume: !input tts_volume
+  tts_notification: !input tts_notification
+  condition_notify_tts: !input condition_notify_tts
+  additional_actions: !input additional_actions
+  notify: !input notify
+  condition_notify: !input condition_notify
+  delay_notification: !input delay_notification
+  device_name_map: "{% set ns = namespace(device_names=[]) %} {% for device_id in
+    notify_devices %}\n  {% set device_name = device_attr(device_id, \"name\") %}\n
+    \ {% set sanitized_name = \"mobile_app_\" + device_name | slugify  %}\n  {% set
+    ns.device_names = ns.device_names + [sanitized_name] %}\n{% endfor %} {{ ns.device_names
+    }}\n"
+  camera_entities_list: !input camera_entities
+  motion_sensors_list: !input motion_sensors
+  camera_entity: "{% if motion_sensors_list and trigger is defined and trigger.entity_id
+    is defined and not trigger.entity_id.startswith(\"camera\") %}\n  {% set sensor_index
+    = motion_sensors_list.index(trigger.entity_id) if trigger.entity_id in motion_sensors_list
+    else 0 %}\n  {{ camera_entities_list[sensor_index] if sensor_index < camera_entities_list|length
+    else camera_entities_list[0] }}\n{% elif trigger is defined and trigger.entity_id
+    is defined %}\n  {{ trigger.entity_id }}\n{% else %}\n  {{ camera_entities_list[0]
+    if camera_entities_list else '' }}\n{% endif %}\n"
+  tag: "{{ camera_entity + int(as_timestamp(now()))|string }}"
+  label: 检测到移动
+  camera_message: >
+    {{ camera_entity.replace("camera.", "").replace("_", " ")|capitalize }}
+  camera: >
+    {{ camera_entities_list[0].replace("camera.", "").replace("_", " ") | title }}
+  importance_prompt: !input importance_prompt
+  camera_entity_snapshot: >
+    {{ camera_entities_list[0] }}
+  camera_file_path: >
+    {{ camera_entity_snapshot.replace("camera.", "")}}
+  file_path: !input file_path
+  snapshot_access_file_path: '{{ file_path | replace(''/config/www'', ''/local'')
+    | replace(''/media'', ''/media/local'') }}'
+  notification_time: !input notification_time
+max_exceeded: silent
+mode: single
+trigger:
+- platform: state
+  entity_id: !input camera_entities
+  to: !input trigger_state
+  id: camera_trigger
+- platform: state
+  entity_id: !input motion_sensors
+  to: 'on'
+  id: motion_sensor_trigger
+condition:
+- condition: and
+  conditions: !input run_conditions
+action:
+- choose:
+  - conditions:
+    - condition: template
+      value_template: '{{ important }}'
+    sequence:
+    - action: llmvision.image_analyzer
+      data:
+        image_entity: '{{[camera_entity]}}'
+        provider: !input provider
+        model: !input model
+        message: '{{importance_prompt}}'
+        include_filename: true
+        target_width: 1280
+        max_tokens: 4000
+      response_variable: importance
+- choose:
+  - conditions:
+    - condition: template
+      value_template: '{{ important and importance.response_text|lower == ''passive''
+        }}'
+    sequence:
+    - stop: 事件不重要
+- if:
+  - condition: template
+    value_template: !input notify
+  then:
+  - if:
+    - condition: !input condition_notify
+    then:
+    - if:
+      - condition: template
+        value_template: '{{ not this.attributes.last_triggered or (now() - this.attributes.last_triggered).seconds
+          > delay_notification }}'
+      then:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ notification_delivery == ''Dynamic'' }}'
+          sequence:
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ preview_mode==''Snapshot'' }}'
+              sequence:
+              - service: camera.snapshot
+                entity_id: !input camera_entities
+                data:
+                  filename: !input file_path
+              - alias: Send instant notification snapshot to notify devices
+                repeat:
+                  for_each: '{{device_name_map}}'
+                  sequence:
+                  - action: notify.{{ repeat.item }}
+                    data:
+                      title: '{{ label }} {{ notification_time }}'
+                      message: '{{camera_message}}检测到活动。'
+                      data:
+                        url: !input tap_navigate
+                        clickAction: !input tap_navigate
+                        tag: '{{tag}}'
+                        group: !input notification_channel
+                        alert_once: true
+                        ttl: 0
+                        priority: high
+                        channel: !input notification_channel
+                        color: !input notification_color
+                        notification_icon: !input notification_icon
+                        sticky: !input notification_sticky
+                        image: '{{ snapshot_access_file_path }}'
+                        attachment:
+                          url: '{{ snapshot_access_file_path }}'
+                          content_type: JPEG
+                        push:
+                          interruption-level: '{{importance.response_text|lower if
+                            importance is defined else ''active''}}'
+                          sound:
+                            name: !input notification_sound
+                            volume: !input notification_volume
+                            critical: '{{ notification_critical }}'
+            - conditions:
+              - condition: template
+                value_template: '{{ preview_mode==''Live Preview'' }}'
+              sequence:
+              - alias: Send Live Feed to notify devices
+                repeat:
+                  for_each: '{{device_name_map}}'
+                  sequence:
+                  - action: notify.{{ repeat.item }}
+                    data:
+                      title: '{{ label }} {{ notification_time }}'
+                      message: '{{camera_message}}检测到活动。'
+                      data:
+                        entity_id: '{{camera_entity}}'
+                        url: !input tap_navigate
+                        tag: '{{tag}}'
+                        group: !input notification_channel
+                        alert_once: true
+                        push:
+                          interruption-level: '{{importance.response_text|lower if
+                            importance is defined else ''active''}}'
+                          sound:
+                            name: !input notification_sound
+                            volume: !input notification_volume
+                            critical: '{{ notification_critical }}'
+                        ttl: 0
+                        priority: high
+- alias: Analyze event
+  action: llmvision.stream_analyzer
+  data:
+    image_entity: '{{[camera_entity]}}'
+    duration: !input duration
+    provider: !input provider
+    model: !input model
+    message: !input message
+    use_memory: !input use_memory
+    store_in_timeline: !input store_in_timeline
+    expose_images: '{{preview_mode == ''Snapshot'' or store_in_timeline}}'
+    generate_title: !input store_in_timeline
+    include_filename: false
+    max_frames: !input max_frames
+    target_width: !input target_width
+    max_tokens: !input max_tokens
+  response_variable: response
+- alias: Update label with title
+  variables:
+    label: '{{response.title}}'
+- if:
+  - condition: template
+    value_template: !input notify
+  then:
+  - if:
+    - condition: !input condition_notify
+    then:
+    - if:
+      - condition: template
+        value_template: '{{ not this.attributes.last_triggered or (now() - this.attributes.last_triggered).seconds
+          > delay_notification }}'
+      then:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ analysis_mode==''Snapshot'' }}'
+          sequence:
+          - alias: (Snapshot) Update notification on notify devices
+            repeat:
+              for_each: '{{device_name_map}}'
+              sequence:
+              - action: notify.{{ repeat.item }}
+                data:
+                  title: '{{ label }} {{ notification_time }}'
+                  message: '{{response.response_text}}'
+                  data:
+                    image: '{{response.key_frame.replace(''/media'',''/media/local'')
+                      }}'
+                    url: !input tap_navigate
+                    clickAction: !input tap_navigate
+                    tag: '{{tag}}'
+                    group: !input notification_channel
+                    alert_once: true
+                    ttl: 0
+                    priority: high
+                    channel: !input notification_channel
+                    color: !input notification_color
+                    notification_icon: !input notification_icon
+                    sticky: !input notification_sticky
+                    push:
+                      interruption-level: '{{''passive'' if notification_delivery==''Dynamic''
+                        else ''active''}}'
+                      sound:
+                        name: !input notification_sound
+                        volume: !input notification_volume
+                        critical: '{{ notification_critical }}'
+                    actions:
+                    - action: URI
+                      title: 查看快照
+                      uri: '{{response.key_frame.replace(''/media'',''/media/local'')
+                        }}'
+        - conditions:
+          - condition: template
+            value_template: '{{ analysis_mode==''Live Preview'' }}'
+          sequence:
+          - alias: Send Live Feed to notify devices
+            repeat:
+              for_each: '{{device_name_map}}'
+              sequence:
+              - action: notify.{{ repeat.item }}
+                data:
+                  title: '{{ label }} {{ notification_time }}'
+                  message: '{{ response.response_text }}'
+                  data:
+                    entity_id: '{{camera_entity}}'
+                    url: !input tap_navigate
+                    tag: '{{tag}}'
+                    group: !input notification_channel
+                    alert_once: true
+                    push:
+                      interruption-level: '{{importance.response_text|lower if importance
+                        is defined else ''active''}}'
+                      sound:
+                        name: !input notification_sound
+                        volume: !input notification_volume
+                        critical: '{{ notification_critical }}'
+                    ttl: 0
+                    priority: high
+                    actions:
+                    - action: URI
+                      title: 查看快照
+                      uri: '{{response.key_frame.replace(''/media'',''/media/local'')
+                        }}'
+    - if:
+      - condition: template
+        value_template: '{{ tts_notification }}'
+      then:
+      - if:
+        - condition: !input condition_notify_tts
+        then:
+        - alias: TTS notification on notify devices
+          repeat:
+            for_each: '{{device_name_map}}'
+            sequence:
+            - action: notify.{{ repeat.item }}
+              data:
+                message: TTS
+                data:
+                  ttl: 0
+                  priority: high
+                  media_stream: !input tts_volume
+                  tts_text: '{{response.response_text}}'
+- choose: []
+  default: !input additional_actions
+- delay: !input cooldown
