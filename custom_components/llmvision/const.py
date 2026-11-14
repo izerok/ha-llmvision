@@ -94,6 +94,66 @@ VERSION_AZURE = "2025-04-01-preview"  # https://learn.microsoft.com/en-us/azure/
 DEFAULT_SYSTEM_PROMPT = "Analyze the images and give a concise, objective event summary (<255 chars). Focus on people, pets, and moving objects; track changes across images. Exclude static details, avoid speculation, and follow user instructions."
 DEFAULT_TITLE_PROMPT = "Generate a clear event title (<6 words) from the description. Use format: <Object> seen at <location>. Keep it concise, factual, and alert-ready. Include names if given. Avoid extra details or interpretations."
 DATA_EXTRACTION_PROMPT = "Analyze the image(s) and extract only the requested info (e.g., object count, license plate). Output strictly in {data_format}. Double-check accuracy and ensure results reflect the image content. Do not explain or add extra info."
+
+# --- Fork (izerok/ha-llmvision): locale-aware Chinese defaults (option B) ---
+# The integration follows the Home Assistant language: when HA runs in Chinese
+# (language code starting with "zh", or the timeline language "Chinese"), the
+# built-in prompts below are used; otherwise the English defaults above apply.
+# A prompt the user typed themselves always wins over both: callers only fall
+# back to these helpers when no custom prompt is stored, or when the stored
+# value is still the untouched English default.
+DEFAULT_SYSTEM_PROMPT_ZH = "分析图片,用简洁、客观的语言给出事件摘要(<255 字)。只关注人、宠物和移动的物体,跟踪多张图片之间的变化。不要写静态细节,不要猜测,按用户指令回答。请用中文回答。"
+DEFAULT_TITLE_PROMPT_ZH = "根据描述生成一个清晰的事件标题(<6 个词),格式:<物体>出现在<位置>。简洁、真实,可直接用作提醒。如有姓名请写上。不要加多余细节或解读。请用中文回答。"
+DATA_EXTRACTION_PROMPT_ZH = "分析图片,只提取要求的信息(例如物体数量、车牌号),严格按 {data_format} 输出。仔细核对准确性,确保结果与图片内容一致。不要解释,不要加多余信息。"
+MEMORY_REFERENCE_PROMPT = "The following images along with descriptions serve as reference. They are not to be mentioned in the response."
+MEMORY_REFERENCE_PROMPT_ZH = "以下图片及描述仅供参考,不要在回答中提及它们。"
+
+
+def is_chinese_language(language) -> bool:
+    """Return True when *language* denotes Chinese.
+
+    Accepts Home Assistant language codes ("zh-Hans", "zh-Hant", "zh-CN"),
+    the legacy translation file code ("cn"), and the timeline language
+    label ("Chinese"). Anything that is not a string (e.g. a Mock in
+    tests, or None) is not Chinese.
+    """
+    if not isinstance(language, str):
+        return False
+    lang = language.strip().lower()
+    return lang.startswith("zh") or lang in {"cn", "chinese", "简体中文", "繁體中文"}
+
+
+def get_hass_language(hass) -> str | None:
+    """Best-effort read of the Home Assistant language code.
+
+    Returns None when the hass object has no usable language (tests use
+    bare Mocks), so callers fall back to English.
+    """
+    try:
+        language = hass.config.language
+    except Exception:
+        return None
+    return language if isinstance(language, str) else None
+
+
+def get_default_system_prompt(language=None) -> str:
+    """Locale-aware default system prompt (Chinese when HA is Chinese)."""
+    return DEFAULT_SYSTEM_PROMPT_ZH if is_chinese_language(language) else DEFAULT_SYSTEM_PROMPT
+
+
+def get_default_title_prompt(language=None) -> str:
+    """Locale-aware default title prompt (Chinese when HA is Chinese)."""
+    return DEFAULT_TITLE_PROMPT_ZH if is_chinese_language(language) else DEFAULT_TITLE_PROMPT
+
+
+def get_data_extraction_prompt(language=None) -> str:
+    """Locale-aware default data-extraction prompt."""
+    return DATA_EXTRACTION_PROMPT_ZH if is_chinese_language(language) else DATA_EXTRACTION_PROMPT
+
+
+def get_memory_reference_prompt(language=None) -> str:
+    """Locale-aware memory reference preamble."""
+    return MEMORY_REFERENCE_PROMPT_ZH if is_chinese_language(language) else MEMORY_REFERENCE_PROMPT
 GLIMPSE_V1_INSTRUCTIONS = """Task: Analyze the provided security camera image and generate a smart-home event notification.
 
 Output:
@@ -149,6 +209,12 @@ DEFAULT_OPENROUTER_MODEL = "google/gemma-3-4b-it:free"
 DEFAULT_MISTRAL_MODEL = "pixtral-12b-2409"
 
 DEFAULT_SUMMARY_PROMPT = "Provide a brief summary for the following titles. Focus on the key actions or changes that occurred over time and avoid unnecessary details or subjective interpretations. The summary should be concise, objective, and relevant to the content of the images. Keep the summary under 50 words and ensure it captures the main events or activities described in the descriptions. Here are the descriptions:\n "
+DEFAULT_SUMMARY_PROMPT_ZH = "请根据以下标题写一段简要总结。只关注一段时间内的关键动作或变化,不要写不必要的细节或主观解读。总结要简洁、客观、与图片内容相关,控制在 50 字以内,抓住描述中的主要事件和活动。请用中文回答。以下是描述:\n "
+
+
+def get_default_summary_prompt(language=None) -> str:
+    """Locale-aware default timeline summary prompt."""
+    return DEFAULT_SUMMARY_PROMPT_ZH if is_chinese_language(language) else DEFAULT_SUMMARY_PROMPT
 
 # API Endpoints
 ENDPOINT_OPENAI = "https://api.openai.com/v1/chat/completions"

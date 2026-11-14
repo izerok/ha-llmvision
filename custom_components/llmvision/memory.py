@@ -7,6 +7,10 @@ from .const import (
     CONF_TITLE_PROMPT,
     DEFAULT_SYSTEM_PROMPT,
     DEFAULT_TITLE_PROMPT,
+    get_default_system_prompt,
+    get_default_title_prompt,
+    get_hass_language,
+    get_memory_reference_prompt,
 )
 import base64
 import io
@@ -20,24 +24,35 @@ class Memory:
     def __init__(self, hass, strings=[], paths=[], system_prompt=None):
         self.hass = hass
         self.entry = self._find_memory_entry()
+        # A stored prompt that is still the untouched English default counts
+        # as "not customized" and follows the Home Assistant language.
+        language = get_hass_language(hass)
         if self.entry is None:
 
             self._system_prompt = (
-                system_prompt if system_prompt else DEFAULT_SYSTEM_PROMPT
+                system_prompt if system_prompt else get_default_system_prompt(language)
             )
-            self._title_prompt = DEFAULT_TITLE_PROMPT
+            self._title_prompt = get_default_title_prompt(language)
             self.memory_strings = strings
             self.memory_paths = paths
             self.memory_images = []
 
         else:
+            stored_system = self.entry.data.get(CONF_SYSTEM_PROMPT)
             self._system_prompt = (
                 system_prompt
                 if system_prompt
-                else self.entry.data.get(CONF_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT)
+                else (
+                    stored_system
+                    if stored_system and stored_system != DEFAULT_SYSTEM_PROMPT
+                    else get_default_system_prompt(language)
+                )
             )
-            self._title_prompt = self.entry.data.get(
-                CONF_TITLE_PROMPT, DEFAULT_TITLE_PROMPT
+            stored_title = self.entry.data.get(CONF_TITLE_PROMPT)
+            self._title_prompt = (
+                stored_title
+                if stored_title and stored_title != DEFAULT_TITLE_PROMPT
+                else get_default_title_prompt(language)
             )
             self.memory_strings = self.entry.data.get(CONF_MEMORY_STRINGS, strings)
             self.memory_paths = self.entry.data.get(CONF_MEMORY_PATHS, paths)
@@ -47,7 +62,7 @@ class Memory:
 
     def _get_memory_images(self, memory_type="OpenAI") -> list:
         content = []
-        memory_prompt = "The following images along with descriptions serve as reference. They are not to be mentioned in the response."
+        memory_prompt = get_memory_reference_prompt(get_hass_language(self.hass))
 
         if memory_type == "OpenAI":
             if self.memory_images:

@@ -7,8 +7,12 @@
 
 <h2 align="center">给你的智能家居加上视觉智能</h2>
 
+> **本 Fork 说明（izerok/ha-llmvision）**：上游为 [valentinfrlch/ha-llmvision](https://github.com/valentinfrlch/ha-llmvision)。本 fork 只做中文支持，不改上游功能、不追新功能。中文行为见下方“中文支持（本 fork）”一节。上游问题请到上游仓库反馈。
+
 <p align="center">
   <a href="#功能">功能</a>
+  ·
+  <a href="#中文支持本-fork">中文支持</a>
   ·
   <a href="#快速开始">快速开始</a>
   ·
@@ -37,11 +41,21 @@
 
 更多最新功能和示例请查看 [官方网站](https://llmvision.org)。
 
+## 中文支持（本 fork）
+
+本 fork 的中文跟随 Home Assistant 的语言设置自动切换（HA 是中文就出中文，HA 是英文就出英文），不用另设开关：
+
+- **配置界面**：`translations/cn.json` 已补齐（含新加的 Mistral 提供商），并新增 `translations/zh-Hans.json`；开发者工具里的 6 个服务（`image_analyzer` / `video_analyzer` / `stream_analyzer` / `data_analyzer` / `create_event` / `get_events`）名称与说明也有中文。
+- **模型输出**：系统提示词、标题提示词、数据抽取提示词、时间线汇总提示词在 HA 为中文时默认用中文版。你自己在设置里写过的提示词永远优先；只有从没改过的默认提示词才会跟随语言切换，已有安装升级后也一样。
+- **时间线**：设置里“时间线语言”新增“中文”选项，并配有中文同义词表（`timeline_strings/cn.json`），中文描述也能正确归类；中文无词边界，已相应修正匹配逻辑。
+- **蓝图**：新增中文版蓝图 `blueprints/event_summary_zh.yaml`（基于 v1.6.0），提示词、通知标题、输入说明均为中文；英文原版蓝图保持不变。
+- **不在本 fork 范围内**：Glimpse-v1 模型本身只支持英文输出，不做改动；Timeline Card 在另一个仓库（`valentinfrlch/llmvision-card`），不在本 fork 里。
+
 ## 快速开始
 
 > 提示：LLM Vision 已包含在默认 HACS 仓库中。你可以直接通过 HACS 安装，或点击下面的按钮在 Home Assistant 中打开。
 
-[![在 Home Assistant Community Store 中打开仓库](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=valentinfrlch&repository=ha-llmvision&category=Integration)
+[![在 Home Assistant Community Store 中打开仓库](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=izerok&repository=ha-llmvision&category=Integration)
 
 1. 在 HACS 中安装 `LLM Vision`。
 2. 重启 Home Assistant。

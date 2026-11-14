@@ -359,6 +359,36 @@
                     }
                 }
             },
+            "mistral": {
+                "title": "配置 Mistral",
+                "description": "Mistral AI 在欧盟托管的视觉模型（Pixtral）。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Mistral 身份验证",
+                        "data": {
+                            "api_key": "API 密钥"
+                        },
+                        "data_description": {
+                            "api_key": "您在 Mistral 控制台获取的 Mistral API 密钥。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "默认 Mistral 模型（例如 pixtral-12b-2409、pixtral-large-latest）。",
+                            "temperature": "控制输出的随机性。值越低，输出越确定。",
+                            "top_p": "控制输出的多样性。值越低，输出越聚焦。"
+                        }
+                    }
+                }
+            },
             "settings": {
                 "title": "设置",
                 "description": "配置LLM视觉集成。在设置其他提供商之前，必须先完成此项。如果您想使用默认设置，只需点击“提交”。",
@@ -429,6 +459,420 @@
         "abort": {
             "unknown_provider": "未知提供商",
             "reconfigure_successful": "设置保存成功"
+        }
+    },
+    "services": {
+        "image_analyzer": {
+            "name": "图片分析器",
+            "description": "用 AI 分析一张图片",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "模型提示词",
+                    "example": "Describe the image"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "image_file": {
+                    "name": "图片文件",
+                    "description": "图片的本地路径",
+                    "example": "/config/www/tmp/front_door.jpg"
+                },
+                "image_entity": {
+                    "name": "图片实体",
+                    "description": "要分析的图片或摄像头实体",
+                    "example": "image.front_door_person"
+                },
+                "include_filename": {
+                    "name": "包含文件名",
+                    "description": "是否在请求中包含文件名",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                },
+                "response_format": {
+                    "name": "响应格式",
+                    "description": "响应格式：text 为自然语言，json 为结构化数据",
+                    "example": "json"
+                },
+                "structure": {
+                    "name": "结构",
+                    "description": "定义期望响应结构的 JSON Schema（仅在响应格式为 json 时使用）。如需为时间线事件自动生成标题，请在 Schema 中加入标题字段（例如 \"title\": {\"type\": \"string\", \"description\": \"Event title\"}），并在下方指定字段名。",
+                    "example": "{\"type\": \"object\", \"properties\": {\"title\": {\"type\": \"string\", \"description\": \"Event title\"}, \"description\": {\"type\": \"string\", \"description\": \"Event description\"}, \"confidence\": {\"type\": \"number\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"title\", \"description\", \"confidence\"], \"additionalProperties\": false}"
+                },
+                "title_field": {
+                    "name": "标题字段名",
+                    "description": "JSON Schema 中存放事件标题的字段名（用于时间线）。留空则使用默认标题“检测到移动”。",
+                    "example": "title"
+                },
+                "description_field": {
+                    "name": "描述字段名",
+                    "description": "JSON Schema 中存放事件描述的字段名（用于时间线）。",
+                    "example": "description"
+                }
+            }
+        },
+        "video_analyzer": {
+            "name": "视频分析器",
+            "description": "用 AI 分析一段视频",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "模型提示词",
+                    "example": "Describe what happens in the video"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "video_file": {
+                    "name": "视频文件",
+                    "description": "一个或多个本地路径或 URL，多个请换行分隔。",
+                    "example": "/config/www/recordings/front_door.mp4"
+                },
+                "event_id": {
+                    "name": "Frigate 事件 ID",
+                    "description": "Frigate 事件 ID",
+                    "example": "1712108310.968815-r28cdt"
+                },
+                "max_frames": {
+                    "name": "最大帧数",
+                    "description": "要分析的帧数。会挑选动作最大的帧。",
+                    "example": 3
+                },
+                "include_filename": {
+                    "name": "包含文件名",
+                    "description": "是否在请求中包含文件名",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                },
+                "response_format": {
+                    "name": "响应格式",
+                    "description": "响应格式：text 为自然语言，json 为结构化数据",
+                    "example": "json"
+                },
+                "structure": {
+                    "name": "结构",
+                    "description": "定义期望响应结构的 JSON Schema（仅在响应格式为 json 时使用）。如需为时间线事件自动生成标题，请在 Schema 中加入标题字段（例如 \"title\": {\"type\": \"string\", \"description\": \"Event title\"}），并在下方指定字段名。",
+                    "example": "{\"type\": \"object\", \"properties\": {\"title\": {\"type\": \"string\", \"description\": \"Event title\"}, \"description\": {\"type\": \"string\", \"description\": \"Event description\"}, \"confidence\": {\"type\": \"number\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"title\", \"description\", \"confidence\"], \"additionalProperties\": false}"
+                },
+                "title_field": {
+                    "name": "标题字段名",
+                    "description": "JSON Schema 中存放事件标题的字段名（用于时间线）。留空则使用默认标题“检测到移动”。",
+                    "example": "title"
+                },
+                "description_field": {
+                    "name": "描述字段名",
+                    "description": "JSON Schema 中存放事件描述的字段名（用于时间线）。",
+                    "example": "description"
+                }
+            }
+        },
+        "stream_analyzer": {
+            "name": "直播流分析器",
+            "description": "用 AI 分析实时摄像头画面",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "模型提示词",
+                    "example": "Describe what happens in the camera feed"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "image_entity": {
+                    "name": "摄像头实体",
+                    "description": "要直播的摄像头实体",
+                    "example": "camera.front_door"
+                },
+                "duration": {
+                    "name": "录制时长",
+                    "description": "录制时长（秒）",
+                    "example": 5
+                },
+                "max_frames": {
+                    "name": "最大帧数",
+                    "description": "要分析的帧数。会挑选动作最大的帧。",
+                    "example": 3
+                },
+                "include_filename": {
+                    "name": "包含摄像头名称",
+                    "description": "是否在请求中包含摄像头名称",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                },
+                "response_format": {
+                    "name": "响应格式",
+                    "description": "响应格式：text 为自然语言，json 为结构化数据",
+                    "example": "json"
+                },
+                "structure": {
+                    "name": "结构",
+                    "description": "定义期望响应结构的 JSON Schema（仅在响应格式为 json 时使用）。如需为时间线事件自动生成标题，请在 Schema 中加入标题字段（例如 \"title\": {\"type\": \"string\", \"description\": \"Event title\"}），并在下方指定字段名。",
+                    "example": "{\"type\": \"object\", \"properties\": {\"title\": {\"type\": \"string\", \"description\": \"Event title\"}, \"description\": {\"type\": \"string\", \"description\": \"Event description\"}, \"confidence\": {\"type\": \"number\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"title\", \"description\", \"confidence\"], \"additionalProperties\": false}"
+                },
+                "title_field": {
+                    "name": "标题字段名",
+                    "description": "JSON Schema 中存放事件标题的字段名（用于时间线）。留空则使用默认标题“检测到移动”。",
+                    "example": "title"
+                },
+                "description_field": {
+                    "name": "描述字段名",
+                    "description": "JSON Schema 中存放事件描述的字段名（用于时间线）。",
+                    "example": "description"
+                }
+            }
+        },
+        "data_analyzer": {
+            "name": "数据分析器",
+            "description": "用从图片中提取的数据更新传感器（测试版）",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "描述要从图片中提取什么。数据类型和可用选项会根据所选传感器自动识别。",
+                    "example": "How many cars are parked?"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "sensor_entity": {
+                    "name": "传感器实体",
+                    "description": "要更新的传感器"
+                },
+                "image_file": {
+                    "name": "图片文件",
+                    "description": "图片的本地路径",
+                    "example": "/config/www/tmp/front_door.jpg"
+                },
+                "image_entity": {
+                    "name": "图片实体",
+                    "description": "要分析的图片或摄像头实体",
+                    "example": "image.front_door_person"
+                },
+                "include_filename": {
+                    "name": "包含文件名",
+                    "description": "是否在请求中包含文件名",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                }
+            }
+        },
+        "create_event": {
+            "name": "创建事件",
+            "description": "在 LLM Vision 时间线中创建新事件",
+            "fields": {
+                "title": {
+                    "name": "标题",
+                    "description": "事件标题",
+                    "example": "Car seen"
+                },
+                "description": {
+                    "name": "描述",
+                    "description": "事件描述",
+                    "example": "A car was seen pulling into a driveway"
+                },
+                "label": {
+                    "name": "标签",
+                    "description": "要赋给事件的标签",
+                    "example": "Car"
+                },
+                "image_path": {
+                    "name": "图片路径",
+                    "description": "事件图片。必须存放在 \"/media/llmvision/snapshots/\"",
+                    "example": "/media/llmvision/snapshots/example.jpg"
+                },
+                "camera_entity": {
+                    "name": "摄像头实体",
+                    "description": "录下该事件的摄像头。",
+                    "example": "camera.front_door"
+                },
+                "start_time": {
+                    "name": "开始时间",
+                    "description": "事件开始的时间和日期。留空则使用当前时间。格式：(YYYY-MM-DD HH:MM:SS)",
+                    "example": "2022-02-22 13:30:00"
+                },
+                "end_time": {
+                    "name": "结束时间",
+                    "description": "事件结束的时间和日期。留空则为开始时间后一分钟。格式：(YYYY-MM-DD HH:MM:SS)",
+                    "example": "2022-02-22 13:30:00"
+                }
+            }
+        },
+        "get_events": {
+            "name": "获取事件",
+            "description": "从 LLM Vision 时间线获取事件",
+            "fields": {
+                "start": {
+                    "name": "开始时间",
+                    "description": "只返回与该开始时间重叠的事件。",
+                    "example": "2026-03-16 08:00:00"
+                },
+                "end": {
+                    "name": "结束时间",
+                    "description": "只返回与该结束时间重叠的事件。",
+                    "example": "2026-03-16 20:00:00"
+                },
+                "cameras": {
+                    "name": "摄像头",
+                    "description": "只返回所选实体拍到的事件。",
+                    "example": "image.front_door_person"
+                },
+                "categories": {
+                    "name": "分类",
+                    "description": "要包含的分类列表，用逗号分隔。",
+                    "example": "people,vehicles,animals"
+                },
+                "labels": {
+                    "name": "标签",
+                    "description": "只返回匹配所选标签的事件",
+                    "example": "person,car,dog"
+                },
+                "limit": {
+                    "name": "数量上限",
+                    "description": "最多返回的事件数。",
+                    "example": 100
+                },
+                "include_no_activity": {
+                    "name": "包含无活动事件",
+                    "description": "是否包含标题为“无活动”的事件。",
+                    "example": true
+                }
+            }
         }
     }
 }

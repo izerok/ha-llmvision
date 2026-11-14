@@ -36,6 +36,7 @@ async def _get_category_and_label(
     lang_map = {
         "Bulgarian": "bg",
         "Catalan": "ca",
+        "Chinese": "cn",
         "Czech": "cs",
         "Danish": "da",
         "German": "de",
@@ -106,8 +107,12 @@ async def _get_category_and_label(
                     # Substitute ${key} placeholder safely (escape key)
                     pattern = tpl.replace("${key}", re.escape(key))
                     flags = flags_from_str(tpl_f)
-                    # Ensure whole-word boundaries around the key if not present
-                    if not re.search(r"\\b", pattern):
+                    # Ensure whole-word boundaries around the key if not present.
+                    # Fork: only for ASCII keys. CJK text has no word
+                    # boundaries (\b never fires between two Chinese
+                    # characters), so a bare Chinese key must match as a
+                    # substring instead of being forced into \b...\b.
+                    if not re.search(r"\\b", pattern) and key.isascii():
                         pattern = rf"\\b{re.escape(key)}s?\\b"
             elif isinstance(regex_template, dict):
                 tpl_pat = regex_template.get("pattern")
@@ -115,7 +120,7 @@ async def _get_category_and_label(
                 if isinstance(tpl_pat, str):
                     pattern = tpl_pat.replace("${key}", re.escape(key))
                     flags = flags_from_str(tpl_flags)
-                    if not re.search(r"\\b", pattern):
+                    if not re.search(r"\\b", pattern) and key.isascii():
                         pattern = rf"\\b{re.escape(key)}s?\\b"
         except Exception as e:
             _LOGGER.debug(f"Failed to apply regex template for key '{key}': {e}")

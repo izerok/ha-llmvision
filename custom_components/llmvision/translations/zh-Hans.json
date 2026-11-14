@@ -1,0 +1,878 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "LLM Vision 设置",
+                "description": "选择要设置的提供者"
+            },
+            "localai": {
+                "title": "连接到您的LocalAI服务器",
+                "description": "请输入您的LocalAI服务器的IP地址和端口。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "服务器连接",
+                        "data": {
+                            "ip_address": "IP地址",
+                            "port": "端口",
+                            "https": "HTTPS"
+                        },
+                        "data_description": {
+                            "https": "使用HTTPS进行安全连接"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。"
+                        }
+                    }
+                }
+            },
+            "ollama": {
+                "title": "配置Ollama",
+                "description": "请输入您的Ollama服务器的IP地址和端口。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "服务器连接",
+                        "data": {
+                            "ip_address": "IP地址",
+                            "port": "端口",
+                            "https": "HTTPS"
+                        },
+                        "data_description": {
+                            "https": "使用HTTPS进行安全连接"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P",
+                            "think": "思考"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。",
+                            "think": "为支持它的模型启用思维模式。"
+                        }
+                    },
+                    "advanced_section": {
+                        "name": "高级",
+                        "description": "高级模型参数",
+                        "data": {
+                            "context_window": "上下文长度",
+                            "keep_alive": "保持活动"
+                        },
+                        "data_description": {
+                            "context_window": "设置用于生成下一个标记的上下文窗口大小。",
+                            "keep_alive": "控制请求后模型在内存中保留的时间。-1：无限期保留，0：立即卸载"
+                        }
+                    }
+                }
+            },
+            "openai": {
+                "title": "配置OpenAI",
+                "description": "请输入有效的OpenAI API密钥。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "OpenAI认证",
+                        "data": {
+                            "api_key": "API密钥"
+                        },
+                        "data_description": {
+                            "api_key": "请确保您的OpenAI账户有余额。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P",
+                            "reasoning_effort": "推理努力"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。",
+                            "reasoning_effort": "控制支持它的模型的推理工作。"
+                        }
+                    }
+                }
+            },
+            "azure": {
+                "title": "配置Azure",
+                "description": "请输入有效的Azure API密钥、基础URL、部署和API版本。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Azure认证",
+                        "data": {
+                            "api_key": "API密钥",
+                            "azure_base_url": "基础URL",
+                            "azure_deployment": "部署",
+                            "azure_version": "API版本"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。"
+                        }
+                    }
+                }
+            },
+            "anthropic": {
+                "title": "配置Anthropic Claude",
+                "description": "请输入有效的Anthropic API密钥。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Anthropic认证",
+                        "data": {
+                            "api_key": "API密钥"
+                        },
+                        "data_description": {
+                            "api_key": "请确保您的Anthropic账户有余额。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P",
+                            "thinking_budget": "思考预算"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。",
+                            "thinking_budget": "控制支持它的模型的思维预算。较高的值允许更复杂的推理，但可能会增加响应时间和成本。"
+                        }
+                    }
+                }
+            },
+            "google": {
+                "title": "配置Google Gemini",
+                "description": "请输入有效的Google Gemini API密钥。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Google认证",
+                        "data": {
+                            "api_key": "API密钥"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P",
+                            "thinking_budget": "思考预算"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。",
+                            "thinking_budget": "控制支持它的模型的思维预算。较高的值允许更复杂的推理，但可能会增加响应时间和成本。"
+                        }
+                    }
+                }
+            },
+            "groq": {
+                "title": "配置Groq",
+                "description": "请输入有效的Groq API密钥。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Groq认证",
+                        "data": {
+                            "api_key": "API密钥"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。"
+                        }
+                    }
+                }
+            },
+            "custom_openai": {
+                "title": "配置自定义OpenAI提供商",
+                "description": "**重要**：仅当API兼容OpenAI的API时有效。如果API不需要API密钥，请输入任意值。端点必须采用以下格式：`http(s)://baseURL(:port)/some/endpoint`",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "自定义OpenAI认证",
+                        "data": {
+                            "custom_openai_endpoint": "自定义端点",
+                            "api_key": "API密钥"
+                        },
+                        "data_description": {
+                            "endpoint": "API端点，格式为：http(s)://baseURL(:port)/some/endpoint",
+                            "api_key": "API密钥或'openai'，如果不需要密钥。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。"
+                        }
+                    }
+                }
+            },
+            "aws_bedrock": {
+                "title": "配置AWS Bedrock提供商",
+                "description": "**重要**：目前仅支持以下模型：Nova、Anthropic Claude",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "AWS认证",
+                        "data": {
+                            "aws_access_key_id": "访问密钥",
+                            "aws_secret_access_key": "密钥",
+                            "aws_region_name": "区域字符串"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。"
+                        }
+                    }
+                }
+            },
+            "openwebui": {
+                "title": "配置Open WebUI提供商",
+                "description": "请输入API密钥（JWT令牌）、IP地址、端口、HTTP(S)和默认模型。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Open WebUI认证",
+                        "data": {
+                            "api_key": "API密钥（JWT令牌）",
+                            "ip_address": "IP地址",
+                            "port": "端口",
+                            "https": "使用HTTPS"
+                        },
+                        "data_description": {
+                            "https": "如果您的服务器支持，使用HTTPS进行安全连接。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。"
+                        }
+                    }
+                }
+            },
+            "openrouter": {
+                "title": "配置OpenRouter",
+                "description": "OpenRouter是一个平台，提供对多种AI模型的访问。您可以用它连接到OpenAI、Anthropic等模型。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "OpenRouter认证",
+                        "data": {
+                            "api_key": "API密钥"
+                        },
+                        "data_description": {
+                            "api_key": "您的OpenRouter API密钥。请确保您的OpenRouter账户已充值。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P",
+                            "reasoning_effort": "推理努力"
+                        },
+                        "data_description": {
+                            "default_model": "当未指定其他模型时使用的默认模型。",
+                            "temperature": "控制输出的随机性。较低的值使输出更确定。",
+                            "top_p": "控制输出的多样性。较低的值使输出更集中。",
+                            "reasoning_effort": "控制支持它的模型的推理工作。"
+                        }
+                    }
+                }
+            },
+            "mistral": {
+                "title": "配置 Mistral",
+                "description": "Mistral AI 在欧盟托管的视觉模型（Pixtral）。",
+                "sections": {
+                    "connection_section": {
+                        "name": "连接",
+                        "description": "Mistral 身份验证",
+                        "data": {
+                            "api_key": "API 密钥"
+                        },
+                        "data_description": {
+                            "api_key": "您在 Mistral 控制台获取的 Mistral API 密钥。"
+                        }
+                    },
+                    "model_section": {
+                        "name": "模型",
+                        "description": "设置默认模型参数",
+                        "data": {
+                            "default_model": "默认模型",
+                            "temperature": "温度",
+                            "top_p": "Top P"
+                        },
+                        "data_description": {
+                            "default_model": "默认 Mistral 模型（例如 pixtral-12b-2409、pixtral-large-latest）。",
+                            "temperature": "控制输出的随机性。值越低，输出越确定。",
+                            "top_p": "控制输出的多样性。值越低，输出越聚焦。"
+                        }
+                    }
+                }
+            },
+            "settings": {
+                "title": "设置",
+                "description": "配置LLM视觉集成。在设置其他提供商之前，必须先完成此项。如果您想使用默认设置，只需点击“提交”。",
+                "sections": {
+                    "general_section": {
+                        "name": "通用",
+                        "description": "设置首选提供商，当所选提供商不可用时使用。",
+                        "data": {
+                            "fallback_provider": "备用提供商",
+                            "request_timeout": "请求超时（秒）"
+                        },
+                        "data_description": {
+                            "fallback_provider": "如果当前提供商失败，LLM视觉将使用所选提供商重试请求。",
+                            "request_timeout": "等待提供商响应的最长时间（以秒为单位）。"
+                        }
+                    },
+                    "prompt_section": {
+                        "name": "系统提示词",
+                        "description": "系统提示词用于改变模型的行为和响应方式。",
+                        "data": {
+                            "system_prompt": "系统提示词",
+                            "title_prompt": "标题提示词"
+                        },
+                        "data_description": {
+                            "system_prompt": "使用系统提示词改变模型的行为和响应方式。",
+                            "title_prompt": "用于生成标题的指令。"
+                        }
+                    },
+                    "timeline_section": {
+                        "name": "时间线",
+                        "description": "时间线存储今天的事件，可通过LLM视觉卡片在仪表板上显示。",
+                        "data": {
+                            "timeline_language": "时间线语言",
+                            "retention_time": "保留时间",
+                            "timeline_today_summary": "时间线摘要",
+                            "timeline_summary_prompt": "今日摘要提示词"
+                        },
+                        "data_description": {
+                            "timeline_language": "选择用于从事件生成图标的语言。",
+                            "retention_time": "事件自动删除天数。设为0则不自动删除。",
+                            "timeline_today_summary": "启用时间线摘要，自动生成今天事件的摘要。",
+                            "timeline_summary_prompt": "用于生成今天事件摘要的指令。"
+                        }
+                    },
+                    "memory_section": {
+                        "name": "记忆（测试版）",
+                        "description": "记忆中的内容会在各提供商间同步，并为模型提供额外上下文。",
+                        "data": {
+                            "memory_paths": "图片文件路径",
+                            "memory_strings": "图片描述"
+                        },
+                        "data_description": {
+                            "memory_paths": "提供图片文件的路径。",
+                            "memory_strings": "提供图片的描述（例如：“这是我的狗Cookie”）。图片和描述顺序需一致，数量也需相同。"
+                        }
+                    }
+                }
+            }
+        },
+        "error": {
+            "handshake_failed": "无法连接到服务器。请检查您的API密钥或IP和端口",
+            "empty_api_key": "无效的API密钥",
+            "invalid_provider": "选择了无效的提供商",
+            "memory_not_supported": "该提供商不支持记忆功能",
+            "invalid_image_path": "一个或多个图片路径无效",
+            "mismatched_lengths": "图片路径和描述数量必须一致"
+        },
+        "abort": {
+            "unknown_provider": "未知提供商",
+            "reconfigure_successful": "设置保存成功"
+        }
+    },
+    "services": {
+        "image_analyzer": {
+            "name": "图片分析器",
+            "description": "用 AI 分析一张图片",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "模型提示词",
+                    "example": "Describe the image"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "image_file": {
+                    "name": "图片文件",
+                    "description": "图片的本地路径",
+                    "example": "/config/www/tmp/front_door.jpg"
+                },
+                "image_entity": {
+                    "name": "图片实体",
+                    "description": "要分析的图片或摄像头实体",
+                    "example": "image.front_door_person"
+                },
+                "include_filename": {
+                    "name": "包含文件名",
+                    "description": "是否在请求中包含文件名",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                },
+                "response_format": {
+                    "name": "响应格式",
+                    "description": "响应格式：text 为自然语言，json 为结构化数据",
+                    "example": "json"
+                },
+                "structure": {
+                    "name": "结构",
+                    "description": "定义期望响应结构的 JSON Schema（仅在响应格式为 json 时使用）。如需为时间线事件自动生成标题，请在 Schema 中加入标题字段（例如 \"title\": {\"type\": \"string\", \"description\": \"Event title\"}），并在下方指定字段名。",
+                    "example": "{\"type\": \"object\", \"properties\": {\"title\": {\"type\": \"string\", \"description\": \"Event title\"}, \"description\": {\"type\": \"string\", \"description\": \"Event description\"}, \"confidence\": {\"type\": \"number\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"title\", \"description\", \"confidence\"], \"additionalProperties\": false}"
+                },
+                "title_field": {
+                    "name": "标题字段名",
+                    "description": "JSON Schema 中存放事件标题的字段名（用于时间线）。留空则使用默认标题“检测到移动”。",
+                    "example": "title"
+                },
+                "description_field": {
+                    "name": "描述字段名",
+                    "description": "JSON Schema 中存放事件描述的字段名（用于时间线）。",
+                    "example": "description"
+                }
+            }
+        },
+        "video_analyzer": {
+            "name": "视频分析器",
+            "description": "用 AI 分析一段视频",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "模型提示词",
+                    "example": "Describe what happens in the video"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "video_file": {
+                    "name": "视频文件",
+                    "description": "一个或多个本地路径或 URL，多个请换行分隔。",
+                    "example": "/config/www/recordings/front_door.mp4"
+                },
+                "event_id": {
+                    "name": "Frigate 事件 ID",
+                    "description": "Frigate 事件 ID",
+                    "example": "1712108310.968815-r28cdt"
+                },
+                "max_frames": {
+                    "name": "最大帧数",
+                    "description": "要分析的帧数。会挑选动作最大的帧。",
+                    "example": 3
+                },
+                "include_filename": {
+                    "name": "包含文件名",
+                    "description": "是否在请求中包含文件名",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                },
+                "response_format": {
+                    "name": "响应格式",
+                    "description": "响应格式：text 为自然语言，json 为结构化数据",
+                    "example": "json"
+                },
+                "structure": {
+                    "name": "结构",
+                    "description": "定义期望响应结构的 JSON Schema（仅在响应格式为 json 时使用）。如需为时间线事件自动生成标题，请在 Schema 中加入标题字段（例如 \"title\": {\"type\": \"string\", \"description\": \"Event title\"}），并在下方指定字段名。",
+                    "example": "{\"type\": \"object\", \"properties\": {\"title\": {\"type\": \"string\", \"description\": \"Event title\"}, \"description\": {\"type\": \"string\", \"description\": \"Event description\"}, \"confidence\": {\"type\": \"number\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"title\", \"description\", \"confidence\"], \"additionalProperties\": false}"
+                },
+                "title_field": {
+                    "name": "标题字段名",
+                    "description": "JSON Schema 中存放事件标题的字段名（用于时间线）。留空则使用默认标题“检测到移动”。",
+                    "example": "title"
+                },
+                "description_field": {
+                    "name": "描述字段名",
+                    "description": "JSON Schema 中存放事件描述的字段名（用于时间线）。",
+                    "example": "description"
+                }
+            }
+        },
+        "stream_analyzer": {
+            "name": "直播流分析器",
+            "description": "用 AI 分析实时摄像头画面",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "模型提示词",
+                    "example": "Describe what happens in the camera feed"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "image_entity": {
+                    "name": "摄像头实体",
+                    "description": "要直播的摄像头实体",
+                    "example": "camera.front_door"
+                },
+                "duration": {
+                    "name": "录制时长",
+                    "description": "录制时长（秒）",
+                    "example": 5
+                },
+                "max_frames": {
+                    "name": "最大帧数",
+                    "description": "要分析的帧数。会挑选动作最大的帧。",
+                    "example": 3
+                },
+                "include_filename": {
+                    "name": "包含摄像头名称",
+                    "description": "是否在请求中包含摄像头名称",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                },
+                "response_format": {
+                    "name": "响应格式",
+                    "description": "响应格式：text 为自然语言，json 为结构化数据",
+                    "example": "json"
+                },
+                "structure": {
+                    "name": "结构",
+                    "description": "定义期望响应结构的 JSON Schema（仅在响应格式为 json 时使用）。如需为时间线事件自动生成标题，请在 Schema 中加入标题字段（例如 \"title\": {\"type\": \"string\", \"description\": \"Event title\"}），并在下方指定字段名。",
+                    "example": "{\"type\": \"object\", \"properties\": {\"title\": {\"type\": \"string\", \"description\": \"Event title\"}, \"description\": {\"type\": \"string\", \"description\": \"Event description\"}, \"confidence\": {\"type\": \"number\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"title\", \"description\", \"confidence\"], \"additionalProperties\": false}"
+                },
+                "title_field": {
+                    "name": "标题字段名",
+                    "description": "JSON Schema 中存放事件标题的字段名（用于时间线）。留空则使用默认标题“检测到移动”。",
+                    "example": "title"
+                },
+                "description_field": {
+                    "name": "描述字段名",
+                    "description": "JSON Schema 中存放事件描述的字段名（用于时间线）。",
+                    "example": "description"
+                }
+            }
+        },
+        "data_analyzer": {
+            "name": "数据分析器",
+            "description": "用从图片中提取的数据更新传感器（测试版）",
+            "fields": {
+                "provider": {
+                    "name": "提供者",
+                    "description": "要使用的配置"
+                },
+                "model": {
+                    "name": "模型",
+                    "description": "要使用的模型。不选则使用默认模型。",
+                    "example": "gpt-4o-mini"
+                },
+                "message": {
+                    "name": "提示词",
+                    "description": "描述要从图片中提取什么。数据类型和可用选项会根据所选传感器自动识别。",
+                    "example": "How many cars are parked?"
+                },
+                "store_in_timeline": {
+                    "name": "存入时间线",
+                    "description": "在时间线中为此次检测创建新事件。",
+                    "example": true
+                },
+                "use_memory": {
+                    "name": "使用记忆",
+                    "description": "使用记忆中保存的信息提供额外上下文。须先设置记忆。",
+                    "example": true
+                },
+                "sensor_entity": {
+                    "name": "传感器实体",
+                    "description": "要更新的传感器"
+                },
+                "image_file": {
+                    "name": "图片文件",
+                    "description": "图片的本地路径",
+                    "example": "/config/www/tmp/front_door.jpg"
+                },
+                "image_entity": {
+                    "name": "图片实体",
+                    "description": "要分析的图片或摄像头实体",
+                    "example": "image.front_door_person"
+                },
+                "include_filename": {
+                    "name": "包含文件名",
+                    "description": "是否在请求中包含文件名",
+                    "example": false
+                },
+                "target_width": {
+                    "name": "目标宽度",
+                    "description": "缩小图片的宽度（像素）",
+                    "example": 1280
+                },
+                "max_tokens": {
+                    "name": "最大 Token 数",
+                    "description": "最多生成的 Token 数",
+                    "example": 3000
+                },
+                "generate_title": {
+                    "name": "生成标题",
+                    "description": "是否生成标题（用于通知和事件）"
+                },
+                "expose_images": {
+                    "name": "保存关键帧",
+                    "description": "保存关键帧。分析过的画面会保存在 /media/llmvision/snapshots，可用于通知，文件路径会包含在返回结果中。",
+                    "example": false
+                }
+            }
+        },
+        "create_event": {
+            "name": "创建事件",
+            "description": "在 LLM Vision 时间线中创建新事件",
+            "fields": {
+                "title": {
+                    "name": "标题",
+                    "description": "事件标题",
+                    "example": "Car seen"
+                },
+                "description": {
+                    "name": "描述",
+                    "description": "事件描述",
+                    "example": "A car was seen pulling into a driveway"
+                },
+                "label": {
+                    "name": "标签",
+                    "description": "要赋给事件的标签",
+                    "example": "Car"
+                },
+                "image_path": {
+                    "name": "图片路径",
+                    "description": "事件图片。必须存放在 \"/media/llmvision/snapshots/\"",
+                    "example": "/media/llmvision/snapshots/example.jpg"
+                },
+                "camera_entity": {
+                    "name": "摄像头实体",
+                    "description": "录下该事件的摄像头。",
+                    "example": "camera.front_door"
+                },
+                "start_time": {
+                    "name": "开始时间",
+                    "description": "事件开始的时间和日期。留空则使用当前时间。格式：(YYYY-MM-DD HH:MM:SS)",
+                    "example": "2022-02-22 13:30:00"
+                },
+                "end_time": {
+                    "name": "结束时间",
+                    "description": "事件结束的时间和日期。留空则为开始时间后一分钟。格式：(YYYY-MM-DD HH:MM:SS)",
+                    "example": "2022-02-22 13:30:00"
+                }
+            }
+        },
+        "get_events": {
+            "name": "获取事件",
+            "description": "从 LLM Vision 时间线获取事件",
+            "fields": {
+                "start": {
+                    "name": "开始时间",
+                    "description": "只返回与该开始时间重叠的事件。",
+                    "example": "2026-03-16 08:00:00"
+                },
+                "end": {
+                    "name": "结束时间",
+                    "description": "只返回与该结束时间重叠的事件。",
+                    "example": "2026-03-16 20:00:00"
+                },
+                "cameras": {
+                    "name": "摄像头",
+                    "description": "只返回所选实体拍到的事件。",
+                    "example": "image.front_door_person"
+                },
+                "categories": {
+                    "name": "分类",
+                    "description": "要包含的分类列表，用逗号分隔。",
+                    "example": "people,vehicles,animals"
+                },
+                "labels": {
+                    "name": "标签",
+                    "description": "只返回匹配所选标签的事件",
+                    "example": "person,car,dog"
+                },
+                "limit": {
+                    "name": "数量上限",
+                    "description": "最多返回的事件数。",
+                    "example": 100
+                },
+                "include_no_activity": {
+                    "name": "包含无活动事件",
+                    "description": "是否包含标题为“无活动”的事件。",
+                    "example": true
+                }
+            }
+        }
+    }
+}

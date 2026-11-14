@@ -64,6 +64,9 @@ from .const import (
     CONF_TITLE_PROMPT,
     DEFAULT_SYSTEM_PROMPT,
     DEFAULT_TITLE_PROMPT,
+    get_default_system_prompt,
+    get_default_title_prompt,
+    get_hass_language,
     GLIMPSE_V1_INSTRUCTIONS,
 )
 
@@ -484,20 +487,38 @@ class Provider(ABC):
         return default_parameters
 
     def _get_system_prompt(self) -> str:
-        """Fetch system prompt from the Settings config entry stored in hass.data."""
+        """Fetch system prompt from the Settings config entry stored in hass.data.
+
+        A prompt the user typed themselves always wins. A stored value that
+        is still the untouched English default is treated as "not customized",
+        so it follows the Home Assistant language instead of pinning existing
+        Chinese installs to English output.
+        """
+        language = get_hass_language(self.hass)
         domain_data = self.hass.data.get(DOMAIN) or {}
         for _, data in domain_data.items():
             if data.get(CONF_PROVIDER) == "Settings":
-                return data.get(CONF_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT)
-        return DEFAULT_SYSTEM_PROMPT
+                stored = data.get(CONF_SYSTEM_PROMPT)
+                if stored and stored != DEFAULT_SYSTEM_PROMPT:
+                    return stored
+                return get_default_system_prompt(language)
+        return get_default_system_prompt(language)
 
     def _get_title_prompt(self) -> str:
-        """Fetch title prompt from the Settings config entry stored in hass.data."""
+        """Fetch title prompt from the Settings config entry stored in hass.data.
+
+        Same rule as the system prompt: a customized prompt wins, an
+        untouched English default follows the Home Assistant language.
+        """
+        language = get_hass_language(self.hass)
         domain_data = self.hass.data.get(DOMAIN) or {}
         for _, data in domain_data.items():
             if data.get(CONF_PROVIDER) == "Settings":
-                return data.get(CONF_TITLE_PROMPT, DEFAULT_TITLE_PROMPT)
-        return DEFAULT_TITLE_PROMPT
+                stored = data.get(CONF_TITLE_PROMPT)
+                if stored and stored != DEFAULT_TITLE_PROMPT:
+                    return stored
+                return get_default_title_prompt(language)
+        return get_default_title_prompt(language)
 
     def _resolve_request_timeout(self) -> int:
         """Resolve request timeout (seconds) from the Settings config entry stored in hass.data."""

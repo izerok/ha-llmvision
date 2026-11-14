@@ -44,6 +44,10 @@ from .const import (
     CONF_AWS_REGION_NAME,
     DEFAULT_TITLE_PROMPT,
     DEFAULT_SYSTEM_PROMPT,
+    get_default_system_prompt,
+    get_default_title_prompt,
+    get_hass_language,
+    is_chinese_language,
     DEFAULT_OPENAI_MODEL,
     DEFAULT_ANTHROPIC_MODEL,
     DEFAULT_AZURE_MODEL,
@@ -1324,6 +1328,15 @@ class llmvisionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_settings(self, user_input=None):
         _LOGGER.debug("Settings step")
+        # Fork: prompt and timeline-language defaults follow the Home
+        # Assistant language (option B). A stored prompt that is still the
+        # untouched English default is treated as "not customized" below.
+        _locale_language = get_hass_language(self.hass)
+        _locale_system_prompt = get_default_system_prompt(_locale_language)
+        _locale_title_prompt = get_default_title_prompt(_locale_language)
+        _locale_timeline_language = (
+            "Chinese" if is_chinese_language(_locale_language) else "English"
+        )
         domain_data = self.hass.data.get(DOMAIN) or {}
         _LOGGER.debug(f"Domain data: {domain_data}")
         fallback_options = [{"label": "No Fallback", "value": "no_fallback"}]
@@ -1393,12 +1406,12 @@ class llmvisionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Schema(
                         {
                             vol.Optional(
-                                CONF_SYSTEM_PROMPT, default=DEFAULT_SYSTEM_PROMPT
+                                CONF_SYSTEM_PROMPT, default=_locale_system_prompt
                             ): selector(
                                 {"text": {"multiline": True, "multiple": False}}
                             ),
                             vol.Optional(
-                                CONF_TITLE_PROMPT, default=DEFAULT_TITLE_PROMPT
+                                CONF_TITLE_PROMPT, default=_locale_title_prompt
                             ): selector(
                                 {"text": {"multiline": True, "multiple": False}}
                             ),
@@ -1410,13 +1423,14 @@ class llmvisionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Schema(
                         {
                             vol.Required(
-                                CONF_TIMELINE_LANGUAGE, default="English"
+                                CONF_TIMELINE_LANGUAGE, default=_locale_timeline_language
                             ): selector(
                                 {
                                     "select": {
                                         "options": [
                                             "Bulgarian",
                                             "Catalan",
+                                            "Chinese",
                                             "Czech",
                                             "Danish",
                                             "Dutch",
@@ -1483,16 +1497,24 @@ class llmvisionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_REQUEST_TIMEOUT: self.init_info.get(CONF_REQUEST_TIMEOUT, 60),
             },
             "prompt_section": {
-                CONF_SYSTEM_PROMPT: self.init_info.get(
-                    CONF_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT
+                CONF_SYSTEM_PROMPT: (
+                    self.init_info.get(CONF_SYSTEM_PROMPT)
+                    if self.init_info.get(CONF_SYSTEM_PROMPT)
+                    and self.init_info.get(CONF_SYSTEM_PROMPT)
+                    != DEFAULT_SYSTEM_PROMPT
+                    else _locale_system_prompt
                 ),
-                CONF_TITLE_PROMPT: self.init_info.get(
-                    CONF_TITLE_PROMPT, DEFAULT_TITLE_PROMPT
+                CONF_TITLE_PROMPT: (
+                    self.init_info.get(CONF_TITLE_PROMPT)
+                    if self.init_info.get(CONF_TITLE_PROMPT)
+                    and self.init_info.get(CONF_TITLE_PROMPT)
+                    != DEFAULT_TITLE_PROMPT
+                    else _locale_title_prompt
                 ),
             },
             "timeline_section": {
                 CONF_TIMELINE_LANGUAGE: self.init_info.get(
-                    CONF_TIMELINE_LANGUAGE, "English"
+                    CONF_TIMELINE_LANGUAGE, _locale_timeline_language
                 ),
                 CONF_RETENTION_TIME: self.init_info.get(CONF_RETENTION_TIME, 7),
                 # CONF_TIMELINE_TODAY_SUMMARY: self.init_info.get(CONF_TIMELINE_TODAY_SUMMARY, False),
